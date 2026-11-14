@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#12141a" />
+  <title>이용 안내</title>
+
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #fff;
+      --text: #1c1f26;
+      --sub: #5b6270;
+      --accent: #2f6bff;
+      --line: #e4e7ec;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12141a;
+        --card: #1b1e26;
+        --text: #eef0f4;
+        --sub: #9aa2b1;
+        --accent: #6b94ff;
+        --line: #2b2f3a;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard",
+        "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 16px 64px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 0 0 6px;
+    }
+
+    .lead {
+      color: var(--sub);
+      margin: 0 0 20px;
+    }
+
+    .slider { position: relative; }
+
+    .track {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .track::-webkit-scrollbar { display: none; }
+
+    .card {
+      flex: 0 0 100%;
+      min-width: 0;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: .9rem;
+      flex: none;
+    }
+
+    .card ul {
+      margin: 6px 0 12px;
+      padding-left: 1.2rem;
+    }
+
+    .card li { margin: 8px 0; }
+
+    .imgs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .imgs img {
+      flex: 1 1 160px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: auto;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+
+    .btn {
+      display: inline-block;
+      align-self: center;
+      margin: auto auto 0;
+      padding: 12px 28px;
+      min-width: 190px;
+      text-align: center;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn:hover { filter: brightness(1.08); }
+
+    .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .nav.prev { left: -12px; }
+    .nav.next { right: -12px; }
+
+    .nav:disabled {
+      opacity: .3;
+      cursor: default;
+    }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--line);
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .dot.on { background: var(--accent); }
+
+    footer {
+      color: var(--sub);
+      font-size: .85rem;
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    @media (max-width: 800px) {
+      main { padding-top: 28px; }
+      .nav.prev { left: 4px; }
+      .nav.next { right: 4px; }
+      .card { padding: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1 id="title">이용 안내</h1>
+    <p class="lead">좌우로 넘기며 순서대로 확인해 주세요.</p>
+
+    <div class="slider">
+      <button class="nav prev" type="button" aria-label="이전 단계">‹</button>
+      <div class="track" id="track" aria-label="이용 안내 단계"></div>
+      <button class="nav next" type="button" aria-label="다음 단계">›</button>
+    </div>
+
+    <div class="dots" id="dots" aria-label="단계 선택"></div>
+    <footer>© <span id="year"></span> <span id="name">Violet.KR</span></footer>
+  </main>
+
+  <script>
+    // 카드 내용은 이 배열에서 수정하면 됩니다.
+    // 이미지는 사이트의 public/img/ 폴더에 업로드한 파일명을 적어주세요.
+    const steps = [
+      {
+        title: "카카오톡 친구추가",
+        bullets: [
+          '아래 버튼 또는 사진의 QR 코드, 카카오톡 ID 검색에서 "Violet.KR"을 통해 친구 추가해 주세요.',
+          "친구 추가 후 판매자에게 대화 메시지를 보내주세요."
+        ],
+        images: ["step1.png"],
+        button: {
+          label: "카카오톡 친구 추가",
+          url: "https://qr.kakao.com/talk/BLcQeiTBoC4ikiGdP65WmFnrGCc-"
+        }
+      },
+      {
+        title: "구글폼 작성",
+        bullets: [
+          "구매 전 고지사항 설문 작성\n안전한 거래를 위해 구매 전 설문 작성이 필요합니다. 순서대로 확인해 주세요.",
+          "고객번호는 꼭 임의로 작성하는것이 아닌, 판매자에게서 확인하세요"
+        ],
+	images: ["step2.png"],
+        button: {
+          label: "설문지 작성",
+          url: "https://docs.google.com/forms/d/e/1FAIpQLSeL7XX4FUw17zJgpb-DWD2E9OveRhyX_mZ1d2dtbuU8hcHtpQ/viewform"
+        }
+      },
+      {
+        title: "송금",
+        bullets: [
+          "채팅방 하단의 ＋ 버튼을 누릅니다.",
+          "송금을 선택한 뒤 송금하기를 누릅니다.",
+          "안내받은 고시환율 기준 금액을 입력해 송금합니다. (별도 수수료 없음)"
+        ],
+        images: ["step3-1.png", "step3-2.png", "step3-3.png"]
+      },
+      {
+        title: "코드 수령 및 등록",
+        images: ["step4.png", "step4-2.png"],
+        bullets: [
+          "입금 확인 후 판매자가 16자리 기프트카드 코드를 안내해 드립니다.",
+          "https://panel.violet.cx/subscriptions 에 접속합니다.",
+          "[기프트 카드 사용] 버튼을 클릭한 후 안내받은 16자리를 입력하면 크레딧이 충전됩니다."
+        ]
+      }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const track = $("track");
+    const dots = $("dots");
+    const prev = document.querySelector(".nav.prev");
+    const next = document.querySelector(".nav.next");
+
+    // HTML에 안전하게 표시하기 위한 문자열 처리
+    const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[char]));
+
+    // 줄바꿈을 화면에 표시할 수 있도록 처리
+    const formatBullet = (value) => escapeHTML(value).replace(/\n/g, "<br>");
+
+    const renderImages = (item) => {
+      if (!item.images || item.images.length === 0) return "";
+
+      return `
+        <div class="imgs">
+          ${item.images.map((file) => `
+            <img
+              src="img/${encodeURIComponent(file)}"
+              alt="${escapeHTML(item.title)} 안내 이미지"
+              loading="lazy"
+              onerror="this.remove()"
+            >
+          `).join("")}
+        </div>
+      `;
+    };
+
+    const render = () => {
+      track.innerHTML = steps.map((step, index) => `
+        <article class="card">
+          <h2>
+            <span class="num">${index + 1}</span>
+            ${escapeHTML(step.title)}
+          </h2>
+
+          ${index === steps.length - 1 ? renderImages(step) : ""}
+
+          <ul>
+            ${(step.bullets || []).map((bullet) =>
+              `<li>${formatBullet(bullet)}</li>`
+            ).join("")}
+          </ul>
+
+          ${index === steps.length - 1 ? "" : renderImages(step)}
+
+          ${step.button ? `
+            <a
+              class="btn"
+              href="${escapeHTML(step.button.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >${escapeHTML(step.button.label)}</a>
+          ` : ""}
+        </article>
+      `).join("");
+
+      dots.innerHTML = steps.map((step, index) => `
+        <button
+          class="dot"
+          type="button"
+          aria-label="${index + 1}단계로 이동"
+          data-i="${index}"
+        ></button>
+      `).join("");
+
+      update();
+    };
+
+    const getCurrentIndex = () => {
+      const cardWidth = track.clientWidth;
+      if (!cardWidth) return 0;
+      return Math.max(0, Math.min(
+        steps.length - 1,
+        Math.round(track.scrollLeft / (cardWidth + 16))
+      ));
+    };
+
+    const go = (index) => {
+      const targetIndex = Math.max(0, Math.min(steps.length - 1, index));
+      const target = track.children[targetIndex];
+      if (target) {
+        track.scrollTo({
+          left: target.offsetLeft - track.offsetLeft,
+          behavior: "smooth"
+        });
+      }
+    };
+
+    const update = () => {
+      const current = getCurrentIndex();
+
+      prev.disabled = current <= 0;
+      next.disabled = current >= steps.length - 1;
+
+      [...dots.children].forEach((dot, index) => {
+        const active = index === current;
+        dot.classList.toggle("on", active);
+        dot.setAttribute("aria-current", active ? "step" : "false");
+      });
+    };
+
+    track.addEventListener("scroll", () => {
+      window.requestAnimationFrame(update);
+    });
+
+    prev.addEventListener("click", () => go(getCurrentIndex() - 1));
+    next.addEventListener("click", () => go(getCurrentIndex() + 1));
+
+    dots.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-i]");
+      if (!button) return;
+      go(Number(button.dataset.i));
+    });
+
+    document.addEventListener("keydown", (event) => {
+      // 입력 중인 요소에서는 좌우 화살표 단축키를 실행하지 않습니다.
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+
+      if (event.key === "ArrowLeft") go(getCurrentIndex() - 1);
+      if (event.key === "ArrowRight") go(getCurrentIndex() + 1);
+    });
+
+    // 선택 사항: /config.json에 {"siteName":"Violet.KR"}이 있으면 사이트 이름을 변경합니다.
+    // config.json이 없거나 읽기에 실패해도 페이지 작동에는 영향이 없습니다.
+    const init = async () => {
+      $("year").textContent = new Date().getFullYear();
+
+      try {
+        const response = await fetch("/config.json");
+        if (response.ok) {
+          const config = await response.json();
+          if (config.siteName) {
+            $("title").textContent = config.siteName;
+            document.title = config.siteName;
+            $("name").textContent = config.siteName;
+          }
+        }
+      } catch (error) {
+        // config.json은 선택 사항이므로 오류를 무시합니다.
+      }
+
+      render();
+    };
+
+    init();
+  </script>
+</body>
+</html>
